@@ -1,0 +1,104 @@
+import math
+
+x = [
+    [0.0, 1.0]
+]
+
+y = [
+  [1, 0]
+]
+
+w1 = [
+    [0.5, 0.1],  # x0
+    [-0.2, 0.2],  # x1
+    [0.5, 0.3]  # x2
+]
+
+w2 = [
+    [0.7, 0.9],  # a4
+    [0.6, 0.8],  # a5
+    [0.2, 0.4],  # x3
+]
+
+lr = 0.1  # learning rate
+
+
+def sigmoid(x):
+  return 1 / (1 + math.e**(-x))
+
+
+def applyActFunc(outputs):
+  return [sigmoid(o) for o in outputs]
+
+def getOutputs(input, weights):
+  inp = input + [1]
+  print("Input: " + str(inp))
+  out = [0] * len(weights[0])
+
+  for count, val in enumerate(inp):
+    weights_and_inp = [val * w for w in weights[count]]
+    print("Sum of %f and %s: %s"%(val, str(weights[count]), str(weights_and_inp)))
+    out = [x + y for x, y in zip(out, weights_and_inp)]
+  
+  print("Output: " + str(out))
+  print("------------------------------------")
+  return out
+
+def forwardStep():
+  layer1 = getOutputs(x[0], w1)
+  layer1 = applyActFunc(layer1)
+  layer2 = getOutputs(layer1, w2)
+
+  error = [x - y for x, y in zip(y[0], layer2)]
+
+  print("Error: " + str(error))
+
+  out = [0] * 2
+  for count in range(len(w2) - 1):
+    out[count] = layer1[count] * (1 - layer1[count]) * ((error[0] * w2[count][0]) + (error[1] * w2[count][1]))
+
+  print("Layer2 Weighted Error: " + str(out))
+  print("------------------------------------")
+
+  inp = x[0] + [1]
+
+  print("Input Again: " + str(inp))
+
+  w1d = [
+    [0,0],
+    [0,0],
+    [0,0]
+  ]
+
+  for d1 in range(3):
+    for d2 in range(2):
+      print("Calc: " + str(lr) + " * " + str(out[d2]) + " * " + str(inp[d1]) + " = " + str(lr * out[d2] * inp[d1]))
+      w1d[d1][d2] = lr * out[d2] * inp[d1]
+
+  print("Weight Updates 1:")
+  for row in w1d:
+    print(row)
+
+  w2d = [
+    [0,0],
+    [0,0],
+    [0,0]
+  ]
+
+  inp = layer1 + [1]
+
+  for d1 in range(3):
+    for d2 in range(2):
+      w2d[d1][d2] = lr * error[d2] * inp[d1]
+
+  print("Weight Updates 2:")
+  for row in w2d:
+    print(row)
+
+  w1new = [[w1[i][j] + w1d[i][j] for j in range(len(w1[0]))] for i in range(len(w1))]
+
+  print("New Weight 1s: ")
+  for row in w1new:
+    print(row)
+
+forwardStep()
