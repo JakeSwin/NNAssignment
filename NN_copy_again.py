@@ -2,36 +2,45 @@ import math
 import matplotlib.pyplot as plt
 
 X = [
-    [0.50, 1.00, 0.75],
-    [1.00, 0.50, 0.75],
-    [1.00, 1.00, 1.00],
-    [-0.01, 0.50, 0.25],
-    [0.50, -0.25, 0.13],
-    [0.01, 0.02, 0.05]
+    [0.0, 1.0]
 ]
 
 Y = [
-  [1, 0],
-  [1, 0],
-  [1, 0],
-  [0, 1],
-  [0, 1],
-  [0, 1]
+    [1, 0]
 ]
 
+# weights = [
+#   [[0.5, 0.1],  # x0
+#    [-0.2, 0.2],  # x1
+#    [0.5, 0.3]],  # x2
+#   [[0.7, 0.9],  # a4
+#    [0.6, 0.8],  # a5
+#    [0.2, 0.4]],  # x3
+# ]
+
 w1 = [
-    [0.74, 0.13, 0.68],  # x1
-    [0.8, 0.4, 0.10],  # x2
-    [0.35, 0.97, 0.96],  # x3
-    [0.9, 0.45, 0.36]  # x0
+    [0.5, 0.1],  # x0
+    [-0.2, 0.2],  # x1
+    [0.5, 0.3]  # x2
 ]
 
 w2 = [
-    [0.35, 0.8],  # a4
-    [0.50, 0.13],  # a5
-    [0.90, 0.8],  # a6
-    [0.98, 0.92]  # x0
+    [0.7, 0.9],  # a4
+    [0.6, 0.8],  # a5
+    [0.2, 0.4],  # x3
 ]
+
+# dict = {
+#   'epoch-1': {
+#     'input-X-row': 0,
+#     'results': {
+#       'weights-before': [],
+#       'weights-after': [],
+#       'weight-change': [],
+#       'error': []
+#     }
+#   }
+# }
 
 error_list = []
 
@@ -54,14 +63,15 @@ def format1dArray(X):
     arr += [float(f"{i:.5f}")]
   return arr
 
-def softmax(X):
-  return [math.e**i / sum([math.e**j for j in X]) for i in X]
-
 def meanSquaredError(raw_error):
   return 1/2 * sum([errors**2 for errors in raw_error])
 
-def sigmoid(X):
-  return [1 / (1 + math.e**(-x)) for x in X]
+def sigmoid(x):
+  return 1 / (1 + math.e**(-x))
+
+def applyActFunc(outputs):
+  print("Applied Sigmoid activation function")
+  return [sigmoid(o) for o in outputs]
 
 def getOutputs(inputs, weights):
   inp = inputs + [1]
@@ -93,14 +103,10 @@ def getWeightUpdates(inputs, weights, output):
 
   return wd
 
-def forwardStep(inputs, weights1, weights2):
-  layer1 = getOutputs(inputs, weights1)
-  layer1 = sigmoid(layer1)
-  layer2 = getOutputs(layer1, weights2)
-  return layer1, layer2
-
 def oneEpoch(inputs, expected, weights1, weights2):
-  layer1, layer2 = forwardStep(inputs, weights1, weights2)
+  layer1 = getOutputs(inputs, weights1)
+  layer1 = applyActFunc(layer1)
+  layer2 = getOutputs(layer1, weights2)
 
   error = [x - y for x, y in zip(expected, layer2)]
 
@@ -136,12 +142,10 @@ for e in range(epochs):
     'weights-1': w1,
     'weights-2': w2,
   }
-  error_buffer = []
   for count, item in enumerate(X):
     w1, w2, error = oneEpoch(item, Y[count], w1, w2)
 
-    error_buffer.append(error)
-  error_list.append(sum(error_buffer) / len(X))
+    error_list.append(error)
 
 for e in dict:
   printBlue(f"------------------{e}------------------")
